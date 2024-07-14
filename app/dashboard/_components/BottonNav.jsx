@@ -35,8 +35,8 @@ const Bottomnav = () => {
         },
     ]
     return (
-        <div className='shadow-md border'>
-            <div className='p-3 flex items-center justify-evenly'>
+        <div className='shadow-md border bg-gray-400'>
+            <div className='flex items-center justify-evenly'>
                 {menuList.map((menu, idx) => (
                     <Link href={menu.path} key={idx} data-tip={menu.name} className={`flex tooltip  items-center gap-3 p-4 my-5 hover:bg-primary relative hover:text-white rounded-lg ${(path == menu.path) ? 'bg-primary text-white' : ''}`}>
                         <menu.icon/> 
