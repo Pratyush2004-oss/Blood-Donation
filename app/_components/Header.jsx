@@ -5,7 +5,7 @@ import Link from 'next/link'
 import React from 'react'
 
 const Header = () => {
-    const { user,isSignedIn } = useUser()
+    const { isSignedIn } = useUser()
     return (
         <div className='bg-white p-5 border-b shadow-sm'>
             <div className='flex items-center justify-between'>

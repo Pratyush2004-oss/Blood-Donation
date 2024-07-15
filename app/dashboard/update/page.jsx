@@ -4,45 +4,117 @@ import { db } from '@/config'
 import { userdata } from '@/config/schema'
 import { useUser } from '@clerk/nextjs'
 import { City, Country, State } from 'country-state-city'
-import { eq } from 'drizzle-orm'
-import { CalendarHeart, Droplet, Mail, MapPin, Phone, SquareUserRound } from 'lucide-react'
+import { and, eq } from 'drizzle-orm'
+import { CalendarHeart, Droplet, Flag, Mail, MapPin, MapPinned, Phone, SquareUserRound } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 
 const Update = () => {
     const { user } = useUser();
     const [userInfo, setUserinfo] = useState([]);
 
-    {/* For selecting the country */}
+
+    {/* Country Selection */ }
     const countrydata = Country.getAllCountries();
-    const [country,setusercountry] = useState();
-    console.log(country);
-    
-    {/* for selecting the state */}
-    const stateData = State.getStatesOfCountry(country);
-    const statecode = State.getStateByCode(country);
-    const [state,setState0] = useState()
-    // console.log(statecode);
+    const [UserCountryCode, setUserCountryCode] = useState(userInfo?.country);
+    const [UserCountry, setUserCountry] = useState("");
 
-    {/* for selecting the city */}
-    const citydata = City.getCitiesOfState(statecode)
-    // console.log(citydata)
+    {/* State selection */ }
+    const statedata = State.getStatesOfCountry(UserCountryCode);
+    const [UserState, setUserState] = useState(userInfo?.state)
+    const [UserStateCode, setUserStateCode] = useState("")
 
+    { /* City Selection */ }
+    const citydata = City.getCitiesOfState(UserCountryCode, UserStateCode);
+    const [UserCity, setUserCity] = useState()
+
+
+    {/* Saving the information of the user if not created account or updating the data of the previous user */ }
+
+    const [name, setname] = useState();
+    const [dob, setdob] = useState();
+    const [bloodgrp, setbloodgrp] = useState();
+    const [loading, setloading] = useState(false);
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        {/* Inserting the Data */ }
+        if (UserCity && UserCountry && UserState && name) {
+            setloading(true);
+
+            const userinDB = await db.select().from(userdata)
+                .where(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress))
+
+            if (!userinDB[0]) {
+                const result = await db.insert(userdata)
+                    .values({
+                        name: name,
+                        usermail: user?.primaryEmailAddress?.emailAddress,
+                        birthdate: dob,
+                        mobile: user?.primaryPhoneNumber?.phoneNumber,
+                        bloodgroup: bloodgrp,
+                        country: UserCountry.name,
+                        state: UserState.name,
+                        city: UserCity,
+                    });
+                if (result) {
+                    setloading(false);
+                    toast.success("User Created Successfull");
+                    reloadData();
+                }
+            }
+            else {
+                {/* Updating the Data */ }
+                const result = await db.update(userdata).set({
+                    name: name,
+                    usermail: user?.primaryEmailAddress?.emailAddress,
+                    birthdate: dob,
+                    mobile: user?.primaryPhoneNumber?.phoneNumber,
+                    bloodgroup: bloodgrp,
+                    country: UserCountry.name,
+                    state: UserState.name,
+                    city: UserCity,
+                })
+                    .where(and(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress), eq(userdata.mobile, user?.primaryPhoneNumber?.phoneNumber)))
+
+                if (result) {
+                    setloading(false);
+                    toast.success("Updated Successfull");
+                    reloadData();
+                }
+            }
+        }
+    }
+
+
+    const reloadData = () => {
+        getUserData();
+    }
+
+    {/* Getting the users */ }
     useEffect(() => {
         user && getUserData();
     }, [user])
+
     const getUserData = async () => {
         const result = await db.select().from(userdata)
             .where(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress))
-        setUserinfo(result)
+        setUserinfo(result[0])
     }
+
     return (
-        <div className='p-10 pb-32 md flex flex-col'>
+        <div className='p-10 pb-32 md flex flex-col' data-theme=''>
             <h2 className='font-bold text-2xl font-serif'>Update your Data</h2>
 
-            <form className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto'>
+            <form
+                onSubmit={handleSubmit}
+                className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto'>
+
                 {/* UserName */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
                             <SquareUserRound width={40} height={40} />
                         </span>
@@ -50,33 +122,37 @@ const Update = () => {
                     </label>
                     <label className="w-full">
                         <input
+                            onChange={(e) => setname(e.target.value)}
                             type="text"
                             placeholder="Enter Your Name"
                             className="input input-bordered w-full"
-                            defaultValue={userInfo.name} />
+                            defaultValue={userInfo && userInfo.name}
+                        />
                     </label>
                 </div>
 
-                {/* Age */}
+                {/* Date of Birth */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
-                        <span className='flex justify-end'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                        <span className='flex md:justify-end'>
                             <CalendarHeart width={40} height={40} />
                         </span>
-                        <span className='text-lg font-bold'>Age</span>
+                        <span className='text-lg font-bold'>Date of Birth</span>
                     </label>
                     <label className="w-full">
                         <input
-                            type="number"
+                            onChange={(e) => setdob(e.target.value)}
+                            type="date"
                             placeholder="Enter age"
                             className="input input-bordered w-full"
-                            defaultValue={userInfo.age} />
+                            disabled={userInfo && userInfo.birthdate}
+                            defaultValue={userInfo && userInfo.birthdate} />
                     </label>
                 </div>
 
                 {/* Email */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
                             <Mail width={40} height={40} />
                         </span>
@@ -87,14 +163,14 @@ const Update = () => {
                             type="text"
                             placeholder="Type here"
                             className="input input-bordered w-full"
-                            defaultValue={userInfo.usermail}
+                            defaultValue={user?.primaryEmailAddress?.emailAddress}
                             disabled />
                     </label>
                 </div>
 
                 {/* Cntact Number */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
                             <Phone width={40} height={40} />
                         </span>
@@ -102,24 +178,28 @@ const Update = () => {
                     </label>
                     <label className="w-full">
                         <input
+                            disabled
                             type="text"
                             placeholder="Type here"
                             className="input input-bordered w-full"
-                            defaultValue={userInfo.mobile}
+                            defaultValue={user?.primaryPhoneNumber?.phoneNumber}
                         />
                     </label>
                 </div>
 
                 {/* Blood Group */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
                             <Droplet width={40} height={40} className='text-red-500' />
                         </span>
                         <span className='text-lg font-bold'>Blood Group</span>
                     </label>
-                    <select className="select w-full select-bordered">
-                        <option disabled selected>{userInfo.bloodgroup}</option>
+                    <select
+                        disabled={userInfo && userInfo.bloodgroup}
+                        onChange={(e) => setbloodgrp(e.target.value)}
+                        className="select w-full select-bordered">
+                        <option disabled selected>{userInfo ? userInfo.bloodgroup : "Select Blood Group"}</option>
                         {BloodGroup.map((option, idx) => (
                             <option key={idx}>{option}</option>
                         ))}
@@ -128,21 +208,24 @@ const Update = () => {
 
                 {/* Country */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
-                            <MapPin width={40} height={40} />
+                            <Flag width={40} height={40} />
                         </span>
                         <span className='text-lg font-bold'>Country</span>
                     </label>
                     <label className="w-full">
-                        <select 
-                        onChange={(v) => setusercountry(v.target.value)}
-                        className="select w-full select-bordered">
-                            <option disabled selected>{userInfo.country}</option>
+                        <select
+                            onChange={(e) => {
+                                setUserCountryCode(e.target.value)
+                                setUserCountry(Country.getCountryByCode(e.target.value))
+                            }}
+                            className="select w-full select-bordered">
+                            <option disabled selected>{userInfo ? userInfo.country : "Select Country"} </option>
                             {countrydata.map((option, idx) => (
                                 <option
-                                value={option.isoCode}
-                                key={idx}>{option.name}</option>
+                                    value={option.isoCode}
+                                    key={idx}>{option.name}</option>
                             ))}
                         </select>
                     </label>
@@ -150,17 +233,24 @@ const Update = () => {
 
                 {/* State */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
-                            <MapPin width={40} height={40} />
+                            <MapPinned width={40} height={40} />
                         </span>
                         <span className='text-lg font-bold'>State</span>
                     </label>
                     <label className="w-full">
-                        <select className="select w-full select-bordered">
-                            <option disabled selected>{userInfo.bloodgroup}</option>
-                            {stateData.map((option, idx) => (
-                                <option key={idx}>{option.name}</option>
+                        <select
+                            onChange={(e) => {
+                                setUserStateCode(e.target.value)
+                                setUserState(State.getStateByCodeAndCountry(e.target.value, "IN"))
+                            }}
+                            className="select w-full select-bordered">
+                            <option disabled selected>{userInfo ? userInfo.state : "Select State"}</option>
+                            {statedata.map((option, idx) => (
+                                <option
+                                    value={option.isoCode}
+                                    key={idx}>{option.name}</option>
                             ))}
                         </select>
                     </label>
@@ -168,17 +258,21 @@ const Update = () => {
 
                 {/* City */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
-                    <label className='grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                    <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
                         <span className='flex justify-end'>
                             <MapPin width={40} height={40} />
                         </span>
                         <span className='text-lg font-bold'>City</span>
                     </label>
                     <label className="w-full">
-                        <select className="select w-full select-bordered">
-                            <option disabled selected>{userInfo.bloodgroup}</option>
-                            {BloodGroup.map((option, idx) => (
-                                <option key={idx}>{option}</option>
+                        <select
+                            onChange={(v) => setUserCity(v.target.value)}
+                            className="select w-full select-bordered">
+                            <option disabled selected>{userInfo ? userInfo.city : "Select City"}</option>
+                            {citydata.map((option, idx) => (
+                                <option
+                                    value={option.name}
+                                    key={idx}>{option.name}</option>
                             ))}
                         </select>
                     </label>
@@ -186,7 +280,12 @@ const Update = () => {
 
                 {/* Submit button */}
                 <div className='flex justify-center items-center'>
-                    <button className='btn btn-primary'>Submit</button>
+                    <button className='btn btn-primary' type='submit'>
+                        {loading &&
+                            <span className='loading loading-bars'></span>
+                        }
+                        {!loading && "Submit"}
+                    </button>
                 </div>
             </form>
         </div>

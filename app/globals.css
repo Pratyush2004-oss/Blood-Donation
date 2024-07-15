@@ -29,3 +29,7 @@ body {
     text-wrap: balance;
   }
 }
+
+*{
+  overscroll-behavior: none;
+}
