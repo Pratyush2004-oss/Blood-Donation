@@ -10,6 +10,7 @@ import Userinfo from './_components/Userinfo'
 
 const Dashboard = () => {
 
+  const [loading, setloading] = useState(false)
   {/* Getting country */ }
   const countrydata = Country.getAllCountries();
   const [countrycode, setCountrycode] = useState();
@@ -38,19 +39,22 @@ const Dashboard = () => {
       toast.error("FIll all credentials!");
     }
     else {
+      setloading(true)
       const result = await db.select().from(userdata)
         .where(and(
           eq(userdata.country, country.name), eq(userdata.state, state.name), eq(userdata.city, city), eq(userdata.bloodgroup, bloodgrp)
         )).orderBy(userdata.id)
-      setbloddinfo(result);
+      if (result) {
+        setbloddinfo(result);
+        setloading(false);
+      }
     }
-
   }
 
 
   return (
     <div data-theme='' className='p-10'>
-      <h2 className='font-bold text-2xl font-serif'>Get the Blood</h2>
+      <h2 className='font-bold text-2xl font-serif'>Want Blood</h2>
       <form
         onSubmit={handleSubmit}
         className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto '>
@@ -106,8 +110,15 @@ const Dashboard = () => {
           </select>
 
         </div>
-        <button className='btn w-full my-5 btn-primary rounded-lg' type='submit'>
-          <span>Submit</span>
+        <button
+          disabled={loading}
+          className='btn w-full my-5 btn-primary rounded-lg' type='submit'>
+          {loading &&
+            <span className='loading loading-bars'></span>
+          }
+          {!loading &&
+            <span>Submit</span>
+          }
 
         </button>
       </form>
@@ -116,19 +127,15 @@ const Dashboard = () => {
       {bloodInfo &&
         <div className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto' >
           <h2 className='font-bold text-2xl font-serif'>Donars in {city}</h2>
-          <div className='grid grid-cols-1 xl:grid-cols-2 my-3 gap-4'>
-            {bloodInfo.map((info, idx) => (
-              <>
+          {bloodInfo.length > 0 ?
+            <div className={`${bloodInfo.length > 0 ? 'grid grid-cols-1 xl:grid-cols-2 my-3 gap-4' : 'flex items-center justify-center'} `}>
+              {bloodInfo.map((info, idx) => (
                 <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-                <Userinfo key={idx} info={info} />
-              </>
-            ))}
-          </div>
+              ))}
+            </div>
+            :
+            <h2 className='text-xl text-center text-red-700 font-bold'>No Donars registered in this city</h2>
+          }
         </div>
       }
     </div>
