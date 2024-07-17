@@ -5,13 +5,25 @@ import { userdata } from '@/config/schema'
 import { useUser } from '@clerk/nextjs'
 import { City, Country, State } from 'country-state-city'
 import { and, eq } from 'drizzle-orm'
-import { CalendarHeart, Droplet, Flag, Mail, MapPin, MapPinned, Phone, SquareUserRound } from 'lucide-react'
+import { CalendarClock, CalendarHeart, Droplet, Flag, Mail, MapPin, MapPinned, Phone, SquareUserRound } from 'lucide-react'
+import moment from 'moment'
 import React, { useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 
 const Update = () => {
     const { user } = useUser();
     const [userInfo, setUserinfo] = useState([]);
+
+    {/* Getting the users */ }
+    useEffect(() => {
+        user && getUserData();
+    }, [user])
+
+    const getUserData = async () => {
+        const result = await db.select().from(userdata)
+            .where(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress))
+        setUserinfo(result[0])
+    }
 
 
     {/* Country Selection */ }
@@ -32,16 +44,28 @@ const Update = () => {
     {/* Saving the information of the user if not created account or updating the data of the previous user */ }
 
     const [name, setname] = useState();
-    const [dob, setdob] = useState();
+    const [dob, setdob] = useState(userInfo?.birthdate);
     const [bloodgrp, setbloodgrp] = useState();
     const [loading, setloading] = useState(false);
 
+    let age = 0;
+    const today = moment().format('yyyy');
+    console.log(today);
+
+    if (userInfo && userInfo.birthdate) {
+        age = (Number(today) - Number((userInfo.birthdate).slice(0, 4)));
+    }
+    else {
+        if(dob){
+            age = (Number(today) - Number(dob.slice(0,4)))
+        }
+    }
 
     const handleSubmit = async (e) => {
         e.preventDefault();
 
         {/* Inserting the Data */ }
-        if (UserCity && UserCountry && UserState && name) {
+        if (UserCity && UserCountry && UserState) {
             setloading(true);
 
             const userinDB = await db.select().from(userdata)
@@ -58,6 +82,7 @@ const Update = () => {
                         country: UserCountry.name,
                         state: UserState.name,
                         city: UserCity,
+                        age: age,
                     });
                 if (result) {
                     setloading(false);
@@ -76,6 +101,7 @@ const Update = () => {
                     country: UserCountry.name,
                     state: UserState.name,
                     city: UserCity,
+                    age: age
                 })
                     .where(and(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress), eq(userdata.mobile, user?.primaryPhoneNumber?.phoneNumber)))
 
@@ -86,6 +112,9 @@ const Update = () => {
                 }
             }
         }
+        else {
+            toast.error('Fill all credentilas..')
+        }
     }
 
 
@@ -93,16 +122,7 @@ const Update = () => {
         getUserData();
     }
 
-    {/* Getting the users */ }
-    useEffect(() => {
-        user && getUserData();
-    }, [user])
 
-    const getUserData = async () => {
-        const result = await db.select().from(userdata)
-            .where(eq(userdata.usermail, user?.primaryEmailAddress?.emailAddress))
-        setUserinfo(result[0])
-    }
 
     return (
         <div className='p-10 pb-32 md flex flex-col' data-theme=''>
@@ -150,6 +170,27 @@ const Update = () => {
                     </label>
                 </div>
 
+                {/* age */}
+                {userInfo &&
+
+                    <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
+                        <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
+                            <span className='flex justify-end'>
+                                <CalendarClock width={40} height={40} />
+                            </span>
+                            <span className='text-lg font-bold'>Age</span>
+                        </label>
+                        <label className="w-full">
+                            <input
+                                type="number"
+                                placeholder="Type here"
+                                className="input input-bordered w-full"
+                                defaultValue={(userInfo && userInfo.age!=0) ? userInfo.age : age}
+                                disabled />
+                        </label>
+                    </div>
+                }
+
                 {/* Email */}
                 <div className='grid grid-cols-1 md:grid-cols-2  my-5'>
                     <label className='flex md:grid grid-cols-2 gap-4 items-center my-2 md:justify-center'>
@@ -163,7 +204,7 @@ const Update = () => {
                             type="text"
                             placeholder="Type here"
                             className="input input-bordered w-full"
-                            defaultValue={user?.primaryEmailAddress?.emailAddress}
+                            defaultValue={userInfo ? userInfo.usermail : user?.primaryEmailAddress?.emailAddress}
                             disabled />
                     </label>
                 </div>
@@ -182,7 +223,7 @@ const Update = () => {
                             type="text"
                             placeholder="Type here"
                             className="input input-bordered w-full"
-                            defaultValue={user?.primaryPhoneNumber?.phoneNumber}
+                            defaultValue={userInfo ? userInfo.mobile : user?.primaryPhoneNumber?.phoneNumber}
                         />
                     </label>
                 </div>

@@ -1,4 +1,4 @@
-import { pgTable, serial, varchar } from "drizzle-orm/pg-core";
+import { integer, pgTable, serial, varchar } from "drizzle-orm/pg-core";
 
 export const userdata = pgTable("User-Data",{
     id:serial('id').primaryKey(),
@@ -10,4 +10,5 @@ export const userdata = pgTable("User-Data",{
     country: varchar("Country").notNull(),
     state: varchar("State").notNull(),
     city:varchar('City').notNull(),
+    age: integer('Age').notNull(),
 })
