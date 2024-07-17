@@ -10,8 +10,8 @@ export const metadata = {
   title: "रक्त",
   description: "Blood Donation Application",
   icons: {
-    icon:['/favicon.ico?v=4'],
-    apple:['/apple-touch-icon.png?v=4'],
+    icon: ['/favicon.ico?v=4'],
+    apple: ['/apple-touch-icon.png?v=4'],
     shortcut: ['/apple-touch-icon.png']
   }
 };
@@ -20,7 +20,7 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" data-theme='autumn'>
-        <body className={`${inter.className}`}>
+        <body className={inter.className}>
           <Header />
           {children}
           <Toaster

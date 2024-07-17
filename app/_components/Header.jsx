@@ -7,7 +7,7 @@ import React from 'react'
 const Header = () => {
     const { isSignedIn } = useUser()
     return (
-        <div className='bg-white p-5 border-b shadow-sm'>
+        <div className='bg-white p-5 border-b shadow-sm sticky top-0'>
             <div className='flex items-center justify-between'>
                 <Link href={'/'}>
                     <Image src={'/Blood.png'} height={50} width={100} alt='logo' />

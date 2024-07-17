@@ -115,7 +115,7 @@ const Dashboard = () => {
       {/* Displaying Data of the users in the window */}
       {bloodInfo &&
         <div className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto' >
-          <h2 className='font-bold text-2xl font-serif'>Donars in city</h2>
+          <h2 className='font-bold text-2xl font-serif'>Donars in {city}</h2>
           <div className='grid grid-cols-1 xl:grid-cols-2 my-3 gap-4'>
             {bloodInfo.map((info, idx) => (
               <>

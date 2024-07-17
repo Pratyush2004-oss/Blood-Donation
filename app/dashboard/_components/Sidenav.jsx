@@ -17,9 +17,9 @@ const Sidenav = () => {
         },
         {
             id: '2',
-            name: "Doner",
+            name: "Donar",
             icon: UserRound,
-            path: '/dashboard/doner'
+            path: '/dashboard/donar'
         },
         {
             id: '3',
