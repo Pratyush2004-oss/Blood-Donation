@@ -113,7 +113,7 @@ const Update = () => {
             }
         }
         else {
-            toast.error('Fill all credentilas..')
+            toast.error('Fill all credentilas...')
         }
     }
 
