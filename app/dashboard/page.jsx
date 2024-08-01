@@ -26,7 +26,7 @@ const Dashboard = () => {
   const [city, setcity] = useState('');
 
   {/* Setting blood group */ }
-  const [bloodgrp, setbloodgrp] = useState('');
+  const [bloodgrp, setbloodgrp] = useState();
 
 
   {/* Setting varialble for getting data from database */ }
@@ -35,7 +35,7 @@ const Dashboard = () => {
   {/* Submiiting the user Details */ }
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!country && !state && !city && !bloodgrp) {
+    if (!country || !state || !city || !bloodgrp) {
       toast.error("FIll all credentials!");
     }
     else {

@@ -56,8 +56,8 @@ const Update = () => {
         age = (Number(today) - Number((userInfo.birthdate).slice(0, 4)));
     }
     else {
-        if(dob){
-            age = (Number(today) - Number(dob.slice(0,4)))
+        if (dob) {
+            age = (Number(today) - Number(dob.slice(0, 4)))
         }
     }
 
@@ -127,7 +127,9 @@ const Update = () => {
     return (
         <div className='p-10 pb-32 md flex flex-col' data-theme=''>
             <h2 className='font-bold text-2xl font-serif'>Update your Data</h2>
-
+            {userInfo &&
+                <p className='text-sm font-semibold font-mono text-red-600'>If updating your data, reselect Country, State and City also</p>
+            }
             <form
                 onSubmit={handleSubmit}
                 className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto'>
@@ -165,7 +167,6 @@ const Update = () => {
                             type="date"
                             placeholder="Enter age"
                             className="input input-bordered w-full"
-                            disabled={userInfo && userInfo.birthdate}
                             defaultValue={userInfo && userInfo.birthdate} />
                     </label>
                 </div>
@@ -185,7 +186,7 @@ const Update = () => {
                                 type="number"
                                 placeholder="Type here"
                                 className="input input-bordered w-full"
-                                defaultValue={(userInfo && userInfo.age!=0) ? userInfo.age : age}
+                                defaultValue={(userInfo && userInfo.age != 0) ? userInfo.age : age}
                                 disabled />
                         </label>
                     </div>
@@ -237,7 +238,6 @@ const Update = () => {
                         <span className='text-lg font-bold'>Blood Group</span>
                     </label>
                     <select
-                        disabled={userInfo && userInfo.bloodgroup}
                         onChange={(e) => setbloodgrp(e.target.value)}
                         className="select w-full select-bordered">
                         <option disabled selected>{userInfo ? userInfo.bloodgroup : "Select Blood Group"}</option>
