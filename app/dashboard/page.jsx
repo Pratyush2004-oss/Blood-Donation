@@ -126,7 +126,7 @@ const Dashboard = () => {
       {/* Displaying Data of the users in the window */}
       {bloodInfo &&
         <div className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto' >
-          <h2 className='font-bold text-2xl font-serif'>Donars in {city},{state}</h2>
+          <h2 className='font-bold text-2xl font-serif'>Donars in {city}, {state.name}</h2>
           {bloodInfo.length > 0 ?
             <div className={`${bloodInfo.length > 0 ? 'grid grid-cols-1 xl:grid-cols-2 my-3 gap-4' : 'flex items-center justify-center'} `}>
               {bloodInfo.map((info, idx) => (
