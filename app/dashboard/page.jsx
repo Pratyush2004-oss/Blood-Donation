@@ -51,7 +51,6 @@ const Dashboard = () => {
     }
   }
 
-
   return (
     <div data-theme='' className='p-10'>
       <h2 className='font-bold text-2xl font-serif'>Want Blood</h2>
