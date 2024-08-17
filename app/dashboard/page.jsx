@@ -1,5 +1,5 @@
 'use client'
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import BloodGroup from '../_data/BloodGroup'
 import { City, Country, State } from 'country-state-city'
 import toast from 'react-hot-toast'
@@ -7,8 +7,13 @@ import { db } from '@/config'
 import { userdata } from '@/config/schema'
 import { and, eq } from 'drizzle-orm'
 import Userinfo from './_components/Userinfo'
+import { User2 } from 'lucide-react'
 
 const Dashboard = () => {
+
+  useEffect(() => {
+    getAllusers()
+  }, []);
 
   const [loading, setloading] = useState(false)
   {/* Getting country */ }
@@ -51,9 +56,19 @@ const Dashboard = () => {
     }
   }
 
+  {/* get all users */ }
+  const [allusers, setallusers] = useState(0);
+  const getAllusers = async () => {
+    const result = await db.select().from(userdata)
+    setallusers(result.length);
+  }
+
   return (
     <div data-theme='' className='p-10'>
-      <h2 className='font-bold text-2xl font-serif'>Want Blood</h2>
+      <div className='flex justify-between'>
+        <h2 className='font-bold text-2xl font-serif'>Want Blood</h2>
+        <div className='btn-error btn btn-sm rounded-full text-black'><User2 className='w-4 font-bold'/> <span className='hidden md:block'>Total registered </span>: <sapn className='font-bold text-xl'>{allusers}</sapn></div>
+      </div>
       <form
         onSubmit={handleSubmit}
         className='w-full p-4 my-4 border-4 shadow-md rounded-lg mx-auto '>
